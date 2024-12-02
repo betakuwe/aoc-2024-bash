@@ -4,4 +4,4 @@
 >
 > -- Michel de Montaigne
 
-Some AI told me this quote, remain sceptical.
+Some AI told me this quote, not professional advice.
