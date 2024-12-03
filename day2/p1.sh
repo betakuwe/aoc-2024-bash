@@ -2,19 +2,12 @@ FILE="input.txt"
 
 check_within_range() {
 	while IFS= read -r diff; do
-		abs_diff=${diff//-/}
+		local abs_diff=${diff//-/}
 		if [[ $abs_diff -lt 1 || $abs_diff -gt 3 ]]; then
-			local res=0
-			break
+			false
+			return
 		fi
 	done <<<"$1"
-	printf "%s" "${res:=1}"
-
-	# works, but slower by 1sec
-	# sed <<<"$1" -e 's/-//' -e 's/\(^.*$\)/1<=\1\&\&\1<=3/' |
-	# 	paste -sd'~' |
-	# 	sed 's/~/\&\&/g' |
-	# 	bc
 }
 
 while IFS= read -r report; do
@@ -24,9 +17,11 @@ while IFS= read -r report; do
 		<(printf '%s' "$heads") \
 		<(tail -n+2 <<<"$report_lines") |
 		bc)
-	minus_counts=$(grep -c '-' <<<"$diffs")
+	minus_counts=$(tr -cd '-' <<<"$diffs" | wc -c)
+	# minus_counts=$(grep -c '-' <<<"$diffs") # works but a little slower
 	[[ "$minus_counts" -eq 0 || "$minus_counts" -eq $(wc -l <<<"$heads") ]] &&
-		[[ $(check_within_range "$diffs") -eq 1 ]] &&
-		cat <<<h
-done <"$FILE" |
-	wc -l
+		check_within_range "$diffs" &&
+		((safe++))
+done <"$FILE"
+
+printf '%s' "$safe"
