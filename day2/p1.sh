@@ -25,8 +25,6 @@ while IFS= read -r report; do
 		<(tail -n+2 <<<"$report_lines") |
 		bc)
 	minus_counts=$(grep -c '-' <<<"$diffs")
-	# echo $diffs
-	# check_within_range $diffs
 	[[ "$minus_counts" -eq 0 || "$minus_counts" -eq $(wc -l <<<"$heads") ]] &&
 		[[ $(check_within_range "$diffs") -eq 1 ]] &&
 		cat <<<h
