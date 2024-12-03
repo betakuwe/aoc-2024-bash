@@ -8,7 +8,7 @@ check_safety() {
 			false
 			return
 		fi
-		local abs_diff=${diff//-/}
+		local abs_diff=${diff#-}
 		if [[ $abs_diff -lt 1 || $abs_diff -gt 3 ]]; then
 			false
 			return
