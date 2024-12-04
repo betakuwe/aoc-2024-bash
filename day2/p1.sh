@@ -1,24 +1,22 @@
 FILE="input.txt"
 
-check_safety() {
-	local prev_sign sign
-	while IFS= read -r diff; do
-		[[ $diff =~ - ]] && sign=- || sign=+
-		if [[ $sign != "${prev_sign:=$sign}" ]] ||
-			(local abs_diff=${diff#-} && [[ $abs_diff -lt 1 || $abs_diff -gt 3 ]]); then
-			false || return
+is_safe() {
+	local report_array prev_sign diff sign
+	read -ra report_array <<<"$1"
+	for i in "${!report_array[@]}"; do
+		if [[ $i -gt 0 ]]; then
+			((diff = report_array[i] - report_array[i - 1], sign = diff < 0))
+			[[ $sign = "${prev_sign:=$sign}" ]] &&
+				{
+					local abs_diff=${diff#-}
+					[[ $abs_diff -ge 1 && $abs_diff -le 3 ]]
+				} || return
 		fi
 	done
 }
 
 while IFS= read -r report; do
-	sed <<<"$report" \
-		-e 's/ \([0-9]\+\)/-\1)(\1/g' \
-		-e 's/^\(.*\)([0-9]\+/(\1/' |
-		while IFS= read -r line; do
-			bc <<<"${line//)(/)$'\n'(}"
-		done |
-		check_safety && ((safe++))
-done <"$FILE"
+	is_safe "$report" && ((safe++))
+done <$FILE
 
 printf '%s' "$safe"
