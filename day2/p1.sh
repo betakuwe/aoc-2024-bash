@@ -4,14 +4,9 @@ check_safety() {
 	local prev_sign sign
 	while IFS= read -r diff; do
 		[[ $diff =~ - ]] && sign=- || sign=+
-		if [[ $sign != "${prev_sign:=$sign}" ]]; then
-			false
-			return
-		fi
-		local abs_diff=${diff#-}
-		if [[ $abs_diff -lt 1 || $abs_diff -gt 3 ]]; then
-			false
-			return
+		if [[ $sign != "${prev_sign:=$sign}" ]] ||
+			(local abs_diff=${diff#-} && [[ $abs_diff -lt 1 || $abs_diff -gt 3 ]]); then
+			false || return
 		fi
 	done
 }
